@@ -1,7 +1,8 @@
 package main
 
-//import "fmt"
 import (
+  "UploadDocumentsAPI/database"
+  "UploadDocumentsAPI/routes"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -23,6 +24,13 @@ func main() {
 		ExposeHeaders:    "",
 		MaxAge:           0,
 }))
+
+//database.ConnectMongoDB()
+//Conexion a la BD
+database.ConnectSqlDB()
+
+//Manejo de rutas
+routes.Register(app)
 //Se inicializa recover de fiber para el manejo de errores
 	app.Use(recover.New())
 	log.Println("Server will start at http://localhost:3000/")
