@@ -2,10 +2,10 @@ package models
 
 type ContractTexts struct {
 	Id    string `gorm:"column:cxID"`
-	DocType string `gorm:"column:cxDocType"`
 	Language  string `gorm:"column:cxla"`
+	DocType string `gorm:"column:cxDocType"`
 	DocName string `gorm:"column:cxDocName"`
-	//Doc byte `gorm:"column:cxTextBinary"`
+	//DocFile string //`gorm:"column:cxTextBinary"`
 	ContractCode int `gorm:"column:cxContractCode"`
 }
 

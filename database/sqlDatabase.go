@@ -15,8 +15,8 @@ var (
 
 //db, err := gorm.Open(sqlserver.Open(dsn), &gorm.Config{})
 
-func ConnectSqlDB() {
-	const dsn = "sqlserver://GTMark1:4TMark1@origos.no-ip.com:1433?database=OrigosVCGTMark_Temp&connection+timeout=30&encrypt=disable"
+func ConnectSqlDB(DB_SERVER string, DB_NAME string, DB_USER string, DB_PASS string) {
+	var dsn = "sqlserver://" + DB_USER +":" + DB_PASS + "@" + DB_SERVER + "?database=" + DB_NAME + "&connection+timeout=30&encrypt=disable"
 	var err error
 	DBConn, err = gorm.Open(sqlserver.Open(dsn), &gorm.Config{
 		//QueryFields: true,
