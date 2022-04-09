@@ -17,7 +17,7 @@ RUN go build
 # Build a New Image and copy only the binary file and de .env files
 FROM alpine:3.14
 COPY --from=builder /go/src/app/UploadDocumentsAPI .
-COPY --from=builder /go/src/app/.env /go/src/app/.env.development /go/src/app/.env.production .
+COPY --from=builder /go/src/app/.env /go/src/app/.env.development /go/src/app/.env.production ./
 CMD ["./UploadDocumentsAPI"]
 
 # Run/Starts the app executable binary
