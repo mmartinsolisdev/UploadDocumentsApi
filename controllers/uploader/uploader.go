@@ -24,18 +24,14 @@ func GetMembershipsList(c *fiber.Ctx) error {
 	DocType := c.Query("DocType")
 	Language := c.Query("Language")
 	DocName := c.Query("DocName")
+	SaleType := c.Query("SaleType")
 	ContractCode := c.Query("ContractCode")
 	code, err := strconv.Atoi(ContractCode)
 
 	if err != nil {
 		fmt.Println("La conversión no se puedo realizar")
 	}
-
-	fmt.Println(string(Id))
-	fmt.Println(DocType)
-	fmt.Println(Language)
-	fmt.Println(DocName)
-	//fmt.Println(ContractCodee)
+	//fmt.Println(DocType)
 
 	//Database connection
 	db := database.DBConn
@@ -46,12 +42,13 @@ func GetMembershipsList(c *fiber.Ctx) error {
 		Language:     Language,
 		DocType:      DocType,
 		DocName:      DocName,
+		SaleType:      SaleType,
 		ContractCode: code,
 	}
 	var results []models.ContractTexts
 	//db.Table("ContractTexts").Find(&results)
 	//db.Model(contractTexts).Where("cxla = ?", Language).Find(&results)
-	db.Where(data).Select("cxID", "cxDocType", "cxla", "cxDocName", "cxContractCode").Find(&results)
+	db.Where(data).Select("cxID", "cxDocType", "cxla", "cxDocName", "cxSaleType","cxContractCode").Find(&results)
 	return c.JSON(results)
 }
 
@@ -75,6 +72,8 @@ func GetCombos(c *fiber.Ctx) error {
 	combos["Language"] = combosData
 	db.Model(contractTexts).Select("cxDocType").Distinct().Pluck("cxDocType", &combosData)
 	combos["DocType"] = combosData
+	db.Model(contractTexts).Select("cxSaleType").Distinct().Pluck("cxSaleType", &combosData)
+	combos["SaleType"] = combosData
 	db.Model(salesRoom).Select("srContractCode, srID").Find(&salesRoom)
 	combos["Code"] = salesRoom
 
@@ -87,6 +86,7 @@ func UploadFile(c *fiber.Ctx) error {
 	DocType := c.Query("DocType")
 	Language := c.Query("Language")
 	DocName := c.Query("DocName")
+	SaleType := c.Query("SaleType")
 	ContractCode := c.Query("ContractCode")
 	code, err := strconv.Atoi(ContractCode)
 
@@ -101,30 +101,15 @@ func UploadFile(c *fiber.Ctx) error {
 		Language:     Language,
 		DocType:      DocType,
 		DocName:      DocName,
+		SaleType:      SaleType,
 		ContractCode: code,
 	}
 	contractTexts := &models.ContractTexts{}
-	/*
-	  //file, err := c.FormFile("document")
-		//fmt.Print(file)
-		 filerc, err := os.Open(file.Filename)
-		 if err != nil{
-			log.Fatal(err)
-		}
-		defer filerc.Close()
-			buf := new(bytes.Buffer)
-	   buf.ReadFrom(filerc)
-	   contents := buf.Bytes()
-
-	   fmt.Print(contents)
-		 // Update with conditions
-		db.Model(contractTexts).Where(data).Update("cxTextBinary", contents)
-	*/
 
 	//Acepta el archivo como multipart form dentro del parametro documents
 	file, err := c.FormFile("documents")
 	if err != nil {
-		fmt.Println("No se pudo obtener el archivo")
+		fmt.Println("The file could not be obtained.")
 		return c.SendStatus(404)
 	}
 

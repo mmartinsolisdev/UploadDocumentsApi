@@ -38,7 +38,7 @@ func main() {
 
 	//Se inicializa la app con fiber
 	app := fiber.New(fiber.Config{
-    BodyLimit: 10 * 1024 * 1024, //Set bodyLimit to 10 Mb
+    BodyLimit: 20 * 1024 * 1024, //Set bodyLimit to 10 Mb
   })
 
 	//Se inicializa cors de fiber para habilitar Cross-Origin Resource Sharing
