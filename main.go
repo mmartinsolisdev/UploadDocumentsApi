@@ -2,6 +2,7 @@ package main
 
 import (
   "UploadDocumentsAPI/database"
+  "UploadDocumentsAPI/middleware"
   "UploadDocumentsAPI/routes"
 	"log"
   "os"
@@ -35,6 +36,13 @@ func main() {
   DB_NAME := os.Getenv("DB_NAME")
   DB_USER := os.Getenv("DB_USER")
   DB_PASS := os.Getenv("DB_PASS")
+  FIREBASE_CREDENTIALS := os.Getenv("FIREBASE_CREDENTIALS")
+
+	//Se inicializa firebase para la verificacion de tokens
+  err = middleware.InitFirebase(FIREBASE_CREDENTIALS)
+  if err != nil {
+    log.Fatal(err)
+  }
 
 	//Se inicializa la app con fiber
 	app := fiber.New(fiber.Config{
@@ -44,7 +52,7 @@ func main() {
 	//Se inicializa cors de fiber para habilitar Cross-Origin Resource Sharing
 	app.Use(cors.New(cors.Config{
 		Next:             nil,
-		AllowOrigins:     "*",
+		AllowOrigins:     "http://origos.no-ip.com, https://origos.no-ip.com",
 		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH, OPTIONS",
 		AllowHeaders:  		"Origin, Content-Length, Accept, Content-Type, Accept-Encoding, Accept-Language, Authorization",
 		AllowCredentials: false,
@@ -61,6 +69,6 @@ routes.Register(app)
 //Se inicializa recover de fiber para el manejo de errores
 	app.Use(recover.New())
 	log.Println("Server will start at http://localhost:" + port_app)
-	log.Fatal(app.Listen(":" + port_app))
+	log.Fatal(app.Listen("127.0.0.1:" + port_app))
 
 }

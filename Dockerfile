@@ -1,5 +1,5 @@
 # Start by selecting the base image for our service
-FROM golang:1.16.6-alpine3.14 AS Builder
+FROM golang:1.27-alpine AS Builder
 
 # Directory in which the app will run
 WORKDIR /go/src/app
