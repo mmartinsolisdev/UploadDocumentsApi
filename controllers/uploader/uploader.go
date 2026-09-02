@@ -15,10 +15,10 @@ import (
 	_ "strings"
 	_ "net/http"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
-func GetMembershipsList(c *fiber.Ctx) error {
+func GetMembershipsList(c fiber.Ctx) error {
 
 	Id := c.Query("Id")
 	DocType := c.Query("DocType")
@@ -52,7 +52,7 @@ func GetMembershipsList(c *fiber.Ctx) error {
 	return c.JSON(results)
 }
 
-func GetCombos(c *fiber.Ctx) error {
+func GetCombos(c fiber.Ctx) error {
 	//Database connection
 	db := database.DBConn
 	contractTexts := &models.ContractTexts{}
@@ -61,26 +61,30 @@ func GetCombos(c *fiber.Ctx) error {
 
 	//var codigos = []Codigos{}
 	//var results map[string]interface{}
-	var combosData []string
+	var ids []string
+	var docNames []string
+	var languages []string
+	var docTypes []string
+	var saleTypes []string
 	var combos = make(map[string]interface{})
 	//"cxID", "cxDocType", "cxla", "cxDocName", "cxContractCode"
-	db.Model(contractTexts).Select("cxID").Distinct().Pluck("cxId", &combosData)
-	combos["Ids"] = combosData
-	db.Model(contractTexts).Select("cxDocName").Distinct().Pluck("cxDocName", &combosData)
-	combos["DocName"] = combosData
-	db.Model(contractTexts).Select("cxla").Distinct().Pluck("cxLa", &combosData)
-	combos["Language"] = combosData
-	db.Model(contractTexts).Select("cxDocType").Distinct().Pluck("cxDocType", &combosData)
-	combos["DocType"] = combosData
-	db.Model(contractTexts).Select("cxSaleType").Distinct().Pluck("cxSaleType", &combosData)
-	combos["SaleType"] = combosData
+	db.Model(contractTexts).Select("cxID").Distinct().Pluck("cxId", &ids)
+	combos["Ids"] = ids
+	db.Model(contractTexts).Select("cxDocName").Distinct().Pluck("cxDocName", &docNames)
+	combos["DocName"] = docNames
+	db.Model(contractTexts).Select("cxla").Distinct().Pluck("cxLa", &languages)
+	combos["Language"] = languages
+	db.Model(contractTexts).Select("cxDocType").Distinct().Pluck("cxDocType", &docTypes)
+	combos["DocType"] = docTypes
+	db.Model(contractTexts).Select("cxSaleType").Distinct().Pluck("cxSaleType", &saleTypes)
+	combos["SaleType"] = saleTypes
 	db.Model(salesRoom).Select("srContractCode, srID").Find(&salesRoom)
 	combos["Code"] = salesRoom
 
 	return c.JSON(combos)
 }
 
-func UploadFile(c *fiber.Ctx) error {
+func UploadFile(c fiber.Ctx) error {
 
 	Id := c.Query("Id")
 	DocType := c.Query("DocType")

@@ -4,7 +4,7 @@ import (
 
 	"UploadDocumentsAPI/controllers/uploader"
 	"UploadDocumentsAPI/middleware"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func Register(app *fiber.App) {

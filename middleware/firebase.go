@@ -7,7 +7,7 @@ import (
 
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"google.golang.org/api/option"
 )
 
@@ -28,7 +28,7 @@ func InitFirebase(credentialsPath string) error {
 	return nil
 }
 
-func FirebaseAuth(c *fiber.Ctx) error {
+func FirebaseAuth(c fiber.Ctx) error {
 	header := c.Get("Authorization")
 	if header == "" || !strings.HasPrefix(header, "Bearer ") {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "missing or invalid authorization header"})
