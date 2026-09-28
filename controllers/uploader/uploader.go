@@ -1,88 +1,16 @@
 package uploader
 
 import (
-	"UploadDocumentsAPI/database"
-	"UploadDocumentsAPI/models"
-	_ "bytes"
-	_ "encoding/json"
 	"fmt"
 	"io/ioutil"
-	_ "log"
-	_ "mime/multipart"
-	_ "os"
-	 "path/filepath"
+	"path/filepath"
 	"strconv"
-	_ "strings"
-	_ "net/http"
+
+	"UploadDocumentsAPI/models"
 
 	"github.com/gofiber/fiber/v3"
+	"gorm.io/gorm"
 )
-
-func GetMembershipsList(c fiber.Ctx) error {
-
-	Id := c.Query("Id")
-	DocType := c.Query("DocType")
-	Language := c.Query("Language")
-	DocName := c.Query("DocName")
-	SaleType := c.Query("SaleType")
-	ContractCode := c.Query("ContractCode")
-	code, err := strconv.Atoi(ContractCode)
-
-	if err != nil {
-		fmt.Println("La conversión no se puedo realizar")
-	}
-	//fmt.Println(DocType)
-
-	//Database connection
-	db := database.DBConn
-	//contractTexts := &models.ContractTexts{}
-	//Se Ejecuta la consulta y se almacena en la variable results
-	data := models.ContractTexts{
-		Id:           Id,
-		Language:     Language,
-		DocType:      DocType,
-		DocName:      DocName,
-		SaleType:      SaleType,
-		ContractCode: code,
-	}
-	var results []models.ContractTexts
-	//db.Table("ContractTexts").Find(&results)
-	//db.Model(contractTexts).Where("cxla = ?", Language).Find(&results)
-	db.Where(data).Select("cxID", "cxDocType", "cxla", "cxDocName", "cxSaleType","cxContractCode").Find(&results)
-	return c.JSON(results)
-}
-
-func GetCombos(c fiber.Ctx) error {
-	//Database connection
-	db := database.DBConn
-	contractTexts := &models.ContractTexts{}
-	salesRoom := []models.SalesRooms{}
-	//Se Ejecuta la consulta y se almacena en la variable results
-
-	//var codigos = []Codigos{}
-	//var results map[string]interface{}
-	var ids []string
-	var docNames []string
-	var languages []string
-	var docTypes []string
-	var saleTypes []string
-	var combos = make(map[string]interface{})
-	//"cxID", "cxDocType", "cxla", "cxDocName", "cxContractCode"
-	db.Model(contractTexts).Select("cxID").Distinct().Pluck("cxId", &ids)
-	combos["Ids"] = ids
-	db.Model(contractTexts).Select("cxDocName").Distinct().Pluck("cxDocName", &docNames)
-	combos["DocName"] = docNames
-	db.Model(contractTexts).Select("cxla").Distinct().Pluck("cxLa", &languages)
-	combos["Language"] = languages
-	db.Model(contractTexts).Select("cxDocType").Distinct().Pluck("cxDocType", &docTypes)
-	combos["DocType"] = docTypes
-	db.Model(contractTexts).Select("cxSaleType").Distinct().Pluck("cxSaleType", &saleTypes)
-	combos["SaleType"] = saleTypes
-	db.Model(salesRoom).Select("srContractCode, srID").Find(&salesRoom)
-	combos["Code"] = salesRoom
-
-	return c.JSON(combos)
-}
 
 func UploadFile(c fiber.Ctx) error {
 
@@ -99,13 +27,16 @@ func UploadFile(c fiber.Ctx) error {
 		return err
 	}
 
-	db := database.DBConn
+	db, ok := c.Locals("db").(*gorm.DB)
+	if !ok || db == nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "database not available"})
+	}
 	data := models.ContractTexts{
 		Id:           Id,
 		Language:     Language,
 		DocType:      DocType,
 		DocName:      DocName,
-		SaleType:      SaleType,
+		SaleType:     SaleType,
 		ContractCode: code,
 	}
 	contractTexts := &models.ContractTexts{}
@@ -126,7 +57,6 @@ func UploadFile(c fiber.Ctx) error {
 	}
 	//Se cierra el archivo al final de la función
 	defer openedfile.Close()
-	// fmt.Println(openfile)
 	//Se lee el archivo con ioutil.ReadAll y se almacena el contenido en Bytes
 	fileBytes, err := ioutil.ReadAll(openedfile)
 	if err != nil {
@@ -135,11 +65,10 @@ func UploadFile(c fiber.Ctx) error {
 	}
 
 	var fileExtension = filepath.Ext(file.Filename)
-	//fmt.Println(extension)
 	if fileExtension != ".docx" {
 		return c.SendStatus(415) //415 Unsupported Media Type
 	}
 	// Update que adjunta el archivo en bytes al campo cxTextBinary
 	db.Model(contractTexts).Where(data).Update("cxTextBinary", fileBytes)
-	return c.SendStatus(200) //c.SendStatus(200) //c.JSON("contents")
+	return c.SendStatus(200)
 }

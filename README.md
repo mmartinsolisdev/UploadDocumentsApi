@@ -23,11 +23,33 @@ To run this project, you will need to add the following environment variables to
 
 ```bash
 PORT_APP=port
-DB_SERVER=dabataseServer
-DB_NAME=databaseName
-DB_USER=databaseUser
-DB_PASS=databasePass
+TENANTS_CONFIG=<ruta absoluta>/tenants.json
+FIREBASE_CREDENTIALS=<ruta absoluta>/serviceAccount.json
 ```
+
+`TENANTS_CONFIG` apunta al catálogo de clientes y sus bases de datos (solo DSNs, fuera de git). Formato v2 (varias BDs por cliente):
+
+```json
+{
+  "sirenis": {
+    "default": "OrigosVCSPT_Temp",
+    "databases": [
+      { "dsn": { "server": "HOST", "port": 1433, "database": "OrigosVCSPT_Temp", "user": "USUARIO", "password": "***", "encrypt": false } },
+      { "dsn": { "server": "HOST", "port": 1433, "database": "OrigosVCSPT_Prod", "user": "USUARIO", "password": "***", "encrypt": false } }
+    ]
+  }
+}
+```
+
+También se acepta el formato legacy de una sola BD por cliente (se normaliza con `default = dsn.database`):
+
+```json
+{
+  "gtmark": { "dsn": { "server": "HOST", "port": 1433, "database": "BD_GTMARK", "user": "USUARIO", "password": "***", "encrypt": false } }
+}
+```
+
+La identidad de una BD es su nombre físico (`dsn.database`). La subida (`POST /uploader/UploadFile`) exige el header `X-Client` con el slug del cliente y acepta `X-Database` con el nombre físico de la BD (vacío ⇒ la del `default`). Sin `X-Client` responde `400`; cliente o BD desconocidos, `404`.
 
 Finally set the .env file to `production` for production or `development` for development.
 

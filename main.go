@@ -32,14 +32,20 @@ func main() {
 	godotenv.Load(".env." + env)
 	log.Print(env)
 	port_app := os.Getenv("PORT_APP")
-	DB_SERVER := os.Getenv("DB_SERVER")
-	DB_NAME := os.Getenv("DB_NAME")
-	DB_USER := os.Getenv("DB_USER")
-	DB_PASS := os.Getenv("DB_PASS")
+	tenantsConfig := os.Getenv("TENANTS_CONFIG")
+	if tenantsConfig == "" {
+		tenantsConfig = "./tenants.local.json"
+	}
 	FIREBASE_CREDENTIALS := os.Getenv("FIREBASE_CREDENTIALS")
 
 	//Se inicializa firebase para la verificacion de tokens
 	err = middleware.InitFirebase(FIREBASE_CREDENTIALS)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//Se cargan los tenants (una BD por cliente, catálogo fuera del repo)
+	err = database.LoadTenants(tenantsConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,15 +66,11 @@ func main() {
 		Next:             nil,
 		AllowOrigins:     allowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "HEAD", "PUT", "DELETE", "PATCH", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Accept", "Content-Type", "Accept-Encoding", "Accept-Language", "Authorization"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Accept", "Content-Type", "Accept-Encoding", "Accept-Language", "Authorization", "X-Client", "X-Database"},
 		AllowCredentials: false,
 		ExposeHeaders:    []string{},
 		MaxAge:           0,
-}))
-
-	//database.ConnectMongoDB()
-	//Conexion a la BD
-	database.ConnectSqlDB(DB_SERVER, DB_NAME, DB_USER, DB_PASS)
+	}))
 
 	//Manejo de rutas
 	routes.Register(app)

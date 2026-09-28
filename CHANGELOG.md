@@ -2,6 +2,20 @@
 
 Registro de cambios y decisiones técnicas del proyecto para futuras consultas.
 
+## [2026-09-28] - Multi-BD por cliente (`X-Database`)
+
+### Cambios
+
+- `database/tenants.go`: catálogo v2 (`{ "default": "...", "databases": [ { "dsn": {...} } ] }`) con normalización del formato legacy de una BD; validación de `default`, duplicados y DSN incompletos; `ResolveDSN(slug, database)`; pools GORM por clave `<slug>:<database>`; puerto por defecto 1433.
+- `middleware/tenant.go`: header `X-Database` opcional (vacío ⇒ base por defecto del cliente). Cliente desconocido ⇒ `404 unknown client`; BD desconocida ⇒ `404 unknown database`; fallo de conexión ⇒ `500 database connection error`.
+- `main.go`: `X-Database` añadido a `AllowHeaders` de CORS (dev cross-origin).
+- `database/tenants_test.go`: tests de normalización del catálogo y resolución de BDs.
+
+### Notas
+
+- El JSON legacy sigue funcionando sin cambios; el orden de despliegue recomendado es Go nuevo → Nitro/SPA → migrar `tenants.json` a v2.
+- El catálogo se lee al arrancar: añadir/cambiar BDs requiere reiniciar el servicio.
+
 ## [2026-08-26] - Corrección CORS para entorno local
 
 ### Problema
